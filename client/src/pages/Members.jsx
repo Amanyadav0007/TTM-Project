@@ -20,7 +20,7 @@ export const Members = () => {
   const fetchMembers = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/auth/members', config);
+      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/auth/members', config);
       setMembers(data);
     } catch (error) {
       console.error('Error fetching members', error);
@@ -40,7 +40,7 @@ export const Members = () => {
     setError('');
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('http://localhost:5000/api/auth/members', { username, email, password }, config);
+      await axios.post('https://ttm-project-psi.vercel.app/api/auth/members', { username, email, password }, config);
       setIsModalOpen(false);
       setUsername('');
       setEmail('');
@@ -55,7 +55,7 @@ export const Members = () => {
     if (window.confirm('Are you sure you want to delete this member? They will lose access.')) {
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        await axios.delete(`http://localhost:5000/api/auth/members/${id}`, config);
+        await axios.delete(`https://ttm-project-psi.vercel.app/api/auth/members/${id}`, config);
         fetchMembers();
       } catch (err) {
         console.error('Error deleting member');

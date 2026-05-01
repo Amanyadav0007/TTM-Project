@@ -13,7 +13,7 @@ export const Dashboard = () => {
   const fetchTasks = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/tasks', config);
+      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/tasks', config);
       setTasks(data);
     } catch (error) {
       console.error('Error fetching tasks', error);

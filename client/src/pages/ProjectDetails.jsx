@@ -34,7 +34,7 @@ export const ProjectDetails = () => {
   const fetchProjectDetails = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get(`http://localhost:5000/api/projects/${id}`, config);
+      const { data } = await axios.get(`https://ttm-project-psi.vercel.app/api/projects/${id}`, config);
       setProject(data.project);
       setTasks(data.tasks);
       setSelectedMembers(data.project.members.map(m => m._id));
@@ -49,7 +49,7 @@ export const ProjectDetails = () => {
     if (user.role !== 'admin') return;
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/auth/members', config);
+      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/auth/members', config);
       setAllUsers(data);
     } catch (err) {
       console.error(err);
@@ -65,7 +65,7 @@ export const ProjectDetails = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/projects/${id}/members`, { members: selectedMembers }, config);
+      await axios.put(`https://ttm-project-psi.vercel.app/api/projects/${id}/members`, { members: selectedMembers }, config);
       setIsMemberModalOpen(false);
       fetchProjectDetails();
     } catch (err) {
@@ -87,9 +87,9 @@ export const ProjectDetails = () => {
 
     try {
       if (editingTask) {
-        await axios.put(`http://localhost:5000/api/tasks/${editingTask._id}`, taskData, config);
+        await axios.put(`https://ttm-project-psi.vercel.app/api/tasks/${editingTask._id}`, taskData, config);
       } else {
-        await axios.post('http://localhost:5000/api/tasks', taskData, config);
+        await axios.post('https://ttm-project-psi.vercel.app/api/tasks', taskData, config);
       }
       fetchProjectDetails();
       closeTaskModal();
@@ -102,7 +102,7 @@ export const ProjectDetails = () => {
     if (window.confirm('Delete this task?')) {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       try {
-        await axios.delete(`http://localhost:5000/api/tasks/${taskId}`, config);
+        await axios.delete(`https://ttm-project-psi.vercel.app/api/tasks/${taskId}`, config);
         fetchProjectDetails();
       } catch (error) {
         console.error('Error deleting task');

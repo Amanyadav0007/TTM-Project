@@ -17,7 +17,7 @@ export const Projects = () => {
   const fetchProjects = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/projects', config);
+      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/projects', config);
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects', error);
@@ -34,7 +34,7 @@ export const Projects = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('http://localhost:5000/api/projects', { name, description }, config);
+      await axios.post('https://ttm-project-psi.vercel.app/api/projects', { name, description }, config);
       setIsModalOpen(false);
       setName('');
       setDescription('');
