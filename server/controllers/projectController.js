@@ -1,5 +1,6 @@
 import Project from '../models/Project.js';
 import Task from '../models/Task.js';
+import User from '../models/User.js';
 
 // @route   GET /api/projects
 export const getProjects = async (req, res) => {
