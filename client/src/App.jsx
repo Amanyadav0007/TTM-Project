@@ -10,16 +10,16 @@ import { Members } from './pages/Members';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) return null;
   if (!user) return <Navigate to="/login" />;
-  
+
   return children;
 };
 
 function AppRoutes() {
   const { user } = useAuth();
-  
+
   return (
     <div className="flex h-screen bg-[#fafafa]">
       {user && <Sidebar />}
@@ -27,37 +27,35 @@ function AppRoutes() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route 
-            path="/" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
           />
-          <Route 
-            path="/projects" 
+          <Route
+            path="/projects"
             element={
               <ProtectedRoute>
                 <Projects />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/projects/:id" 
+          <Route
+            path="/projects/:id"
             element={
               <ProtectedRoute>
                 <ProjectDetails />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/members" 
+          <Route
+            path="/members"
             element={
               <ProtectedRoute>
                 <Members />
               </ProtectedRoute>
-            } 
+            }
           />
         </Routes>
       </main>
