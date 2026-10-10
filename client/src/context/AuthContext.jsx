@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import { authAPI } from '../api';
 
 const AuthContext = createContext();
 
@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const { data } = await axios.post('https://ttm-project-psi.vercel.app/api/auth/login', { email, password });
+      const { data } = await authAPI.login(email, password);
       setUser(data);
       localStorage.setItem('userInfo', JSON.stringify(data));
       return { success: true };
@@ -30,9 +30,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password, role) => {
+  const register = async (username, email, password) => {
     try {
-      const { data } = await axios.post('https://ttm-project-psi.vercel.app/api/auth/register', { username, email, password, role });
+      const { data } = await authAPI.register(username, email, password);
       setUser(data);
       localStorage.setItem('userInfo', JSON.stringify(data));
       return { success: true };
@@ -41,9 +41,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('userInfo');
+  const logout = async () => {
+    try {
+      // Invalidate the refresh token on the server
+      await authAPI.logout();
+    } catch (_) {
+      // Proceed with local cleanup even if server call fails
+    } finally {
+      setUser(null);
+      localStorage.removeItem('userInfo');
+    }
   };
 
   const value = {
@@ -51,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    loading
+    loading,
   };
 
   return (

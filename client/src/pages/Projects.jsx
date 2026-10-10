@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { projectsAPI } from '../api';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Plus, FolderKanban, Users } from 'lucide-react';
@@ -16,8 +16,7 @@ export const Projects = () => {
 
   const fetchProjects = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/projects', config);
+      const { data } = await projectsAPI.getAll();
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects', error);
@@ -33,8 +32,7 @@ export const Projects = () => {
   const handleCreateProject = async (e) => {
     e.preventDefault();
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('https://ttm-project-psi.vercel.app/api/projects', { name, description }, config);
+      await projectsAPI.create(name, description);
       setIsModalOpen(false);
       setName('');
       setDescription('');

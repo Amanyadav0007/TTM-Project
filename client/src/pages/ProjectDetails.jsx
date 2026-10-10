@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { projectsAPI, tasksAPI, authAPI } from '../api';
 import { TaskCard } from '../components/TaskCard';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -33,8 +33,7 @@ export const ProjectDetails = () => {
 
   const fetchProjectDetails = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get(`https://ttm-project-psi.vercel.app/api/projects/${id}`, config);
+      const { data } = await projectsAPI.getById(id);
       setProject(data.project);
       setTasks(data.tasks);
       setSelectedMembers(data.project.members.map(m => m._id));
@@ -48,8 +47,7 @@ export const ProjectDetails = () => {
   const fetchAllUsers = async () => {
     if (user.role !== 'admin') return;
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/auth/members', config);
+      const { data } = await authAPI.getMembers();
       setAllUsers(data);
     } catch (err) {
       console.error(err);
@@ -64,8 +62,7 @@ export const ProjectDetails = () => {
   const handleUpdateMembers = async (e) => {
     e.preventDefault();
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`https://ttm-project-psi.vercel.app/api/projects/${id}/members`, { members: selectedMembers }, config);
+      await projectsAPI.updateMembers(id, selectedMembers);
       setIsMemberModalOpen(false);
       fetchProjectDetails();
     } catch (err) {
@@ -75,21 +72,20 @@ export const ProjectDetails = () => {
 
   const handleTaskSubmit = async (e) => {
     e.preventDefault();
-    const config = { headers: { Authorization: `Bearer ${user.token}` } };
-    const taskData = { 
-      title, 
-      description, 
-      status, 
+    const taskData = {
+      title,
+      description,
+      status,
       assignedTo: assignedTo || null,
       project: id,
-      dueDate: dueDate || null
+      dueDate: dueDate || null,
     };
 
     try {
       if (editingTask) {
-        await axios.put(`https://ttm-project-psi.vercel.app/api/tasks/${editingTask._id}`, taskData, config);
+        await tasksAPI.update(editingTask._id, taskData);
       } else {
-        await axios.post('https://ttm-project-psi.vercel.app/api/tasks', taskData, config);
+        await tasksAPI.create(taskData);
       }
       fetchProjectDetails();
       closeTaskModal();
@@ -100,9 +96,8 @@ export const ProjectDetails = () => {
 
   const handleDeleteTask = async (taskId) => {
     if (window.confirm('Delete this task?')) {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
       try {
-        await axios.delete(`https://ttm-project-psi.vercel.app/api/tasks/${taskId}`, config);
+        await tasksAPI.delete(taskId);
         fetchProjectDetails();
       } catch (error) {
         console.error('Error deleting task');
@@ -134,6 +129,10 @@ export const ProjectDetails = () => {
     setEditingTask(null);
   };
 
+  // Members can also create tasks now (backend allows it)
+  const canCreateTask = user.role === 'admin' ||
+    (project && project.members.some(m => (m._id || m) === user._id));
+
   if (loading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>;
   if (error) return <div className="text-center py-20 text-red-500">{error}</div>;
 
@@ -154,7 +153,7 @@ export const ProjectDetails = () => {
               <Users size={16} /> Manage Members
             </Button>
           )}
-          {user.role === 'admin' && (
+          {canCreateTask && (
             <Button onClick={() => openTaskModal()} className="gap-2">
               <Plus size={16} /> Add Task
             </Button>
@@ -257,7 +256,7 @@ export const ProjectDetails = () => {
                       checked={selectedMembers.includes(u._id)}
                       onChange={(e) => {
                         if (e.target.checked) setSelectedMembers([...selectedMembers, u._id]);
-                        else setSelectedMembers(selectedMembers.filter(id => id !== u._id));
+                        else setSelectedMembers(selectedMembers.filter(mid => mid !== u._id));
                       }}
                       disabled={u._id === project.createdBy._id} // Cannot remove creator
                     />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { tasksAPI } from '../api';
 import { Link } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Clock, Loader2, Target } from 'lucide-react';
 import { cn } from '../utils/cn';
@@ -12,8 +12,7 @@ export const Dashboard = () => {
 
   const fetchTasks = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/tasks', config);
+      const { data } = await tasksAPI.getAll();
       setTasks(data);
     } catch (error) {
       console.error('Error fetching tasks', error);

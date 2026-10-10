@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../api';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Plus, X, Trash2, Users } from 'lucide-react';
@@ -19,8 +19,7 @@ export const Members = () => {
 
   const fetchMembers = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('https://ttm-project-psi.vercel.app/api/auth/members', config);
+      const { data } = await authAPI.getMembers();
       setMembers(data);
     } catch (error) {
       console.error('Error fetching members', error);
@@ -39,8 +38,7 @@ export const Members = () => {
     e.preventDefault();
     setError('');
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('https://ttm-project-psi.vercel.app/api/auth/members', { username, email, password }, config);
+      await authAPI.createMember(username, email, password);
       setIsModalOpen(false);
       setUsername('');
       setEmail('');
@@ -54,8 +52,7 @@ export const Members = () => {
   const handleDeleteMember = async (id) => {
     if (window.confirm('Are you sure you want to delete this member? They will lose access.')) {
       try {
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        await axios.delete(`https://ttm-project-psi.vercel.app/api/auth/members/${id}`, config);
+        await authAPI.deleteMember(id);
         fetchMembers();
       } catch (err) {
         console.error('Error deleting member');
