@@ -5,7 +5,8 @@ const connectDB = async () => {
     mongoose.connection.on('connected', () => {
       console.log("Database connected!");
     })
-    await mongoose.connect(process.env.MONGO_URI);
+    const mongoUri = process.env.MONGO_URI || 'mongodb+srv://amanyadav:amanyadav123@cluster0.p6ah0gn.mongodb.net/team-task-manager?retryWrites=true&w=majority';
+    await mongoose.connect(mongoUri);
   } catch (error) {
     console.error("Database connection failed:", error.message);
     console.log("Retrying database connection in 5 seconds...");
