@@ -1,11 +1,13 @@
 import express from 'express';
 import { protect, admin } from '../middleware/authMiddleware.js';
-import { registerAdmin, loginUser, getMembers, createMember, deleteMember } from '../controllers/authController.js';
+import { registerAdmin, loginUser, getMembers, createMember, deleteMember, refreshToken, logout } from '../controllers/authController.js';
 
 const router = express.Router();
 
 router.post('/register', registerAdmin);
 router.post('/login', loginUser);
+router.post('/refresh', refreshToken);
+router.post('/logout', protect, logout);
 
 router.route('/members').get(protect, admin, getMembers).post(protect, admin, createMember);
 

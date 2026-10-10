@@ -7,7 +7,8 @@ export const getProjects = async (req, res) => {
   try {
     let projects;
     if (req.user.role === 'admin') {
-      projects = await Project.find({}).populate('members', 'username email').populate('createdBy', 'username');
+      // Admin only sees projects they created
+      projects = await Project.find({ createdBy: req.user._id }).populate('members', 'username email').populate('createdBy', 'username');
     } else {
       projects = await Project.find({ members: req.user._id }).populate('members', 'username email').populate('createdBy', 'username');
     }
@@ -21,7 +22,11 @@ export const getProjects = async (req, res) => {
 export const createProject = async (req, res) => {
   try {
     const { name, description, members } = req.body;
-    
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'Project name is required' });
+    }
+
     // Always include the admin who created it as a member
     const projectMembers = members ? [...new Set([...members, req.user._id])] : [req.user._id];
 
@@ -43,18 +48,25 @@ export const createProject = async (req, res) => {
 export const getProjectDetails = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id).populate('members', 'username email').populate('createdBy', 'username');
-    
+
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Check if member or admin
-    if (req.user.role !== 'admin' && !project.members.some(m => m._id.toString() === req.user._id.toString())) {
-      return res.status(403).json({ message: 'Not authorized to view this project' });
+    if (req.user.role === 'admin') {
+      // Admin can only view projects they created
+      if (project.createdBy._id.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to view this project' });
+      }
+    } else {
+      // Members can only view projects they belong to
+      if (!project.members.some(m => m._id.toString() === req.user._id.toString())) {
+        return res.status(403).json({ message: 'Not authorized to view this project' });
+      }
     }
 
     const tasks = await Task.find({ project: project._id }).populate('assignedTo', 'username email').populate('createdBy', 'username');
-    
+
     res.json({ project, tasks });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -65,21 +77,31 @@ export const getProjectDetails = async (req, res) => {
 export const updateProjectMembers = async (req, res) => {
   try {
     const { members } = req.body; // Array of user IDs
+
+    if (!Array.isArray(members)) {
+      return res.status(400).json({ message: 'members must be an array of user IDs' });
+    }
+
     const project = await Project.findById(req.params.id);
 
-    if (project) {
-      project.members = members;
-      // Ensure creator is always in members
-      if (!project.members.includes(project.createdBy)) {
-          project.members.push(project.createdBy);
-      }
-      const updatedProject = await project.save();
-      
-      const populatedProject = await Project.findById(updatedProject._id).populate('members', 'username email').populate('createdBy', 'username');
-      res.json(populatedProject);
-    } else {
-      res.status(404).json({ message: 'Project not found' });
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
     }
+
+    // Admin can only manage members of projects they created
+    if (project.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to manage this project' });
+    }
+
+    project.members = members;
+    // Ensure creator is always in members
+    if (!project.members.map(m => m.toString()).includes(project.createdBy.toString())) {
+      project.members.push(project.createdBy);
+    }
+    const updatedProject = await project.save();
+
+    const populatedProject = await Project.findById(updatedProject._id).populate('members', 'username email').populate('createdBy', 'username');
+    res.json(populatedProject);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

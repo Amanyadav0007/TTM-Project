@@ -4,7 +4,7 @@ import { getTasks, createTask, updateTask, deleteTask } from '../controllers/tas
 
 const router = express.Router();
 
-router.route('/').get(protect, getTasks).post(protect, admin, createTask);
+router.route('/').get(protect, getTasks).post(protect, createTask);
 
 router.route('/:id').put(protect, updateTask).delete(protect, admin, deleteTask);
 
